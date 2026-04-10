@@ -24,15 +24,47 @@ const Item = mongoose.model('Item', itemSchema);
 
 // GET endpoint to fetch all items
 app.get('/api/items', async (req, res) => {
-  const items = await Item.find();
-  res.json(items);
+  try {
+    const items = await Item.find();
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST endpoint to create a new item
 app.post('/api/items', async (req, res) => {
-  const newItem = new Item({ name: req.body.name });
-  await newItem.save();
-  res.json(newItem);
+  try {
+    const newItem = new Item({ name: req.body.name });
+    await newItem.save();
+    res.json(newItem);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT endpoint to update an item
+app.put('/api/items/:id', async (req, res) => {
+  try {
+    const updatedItem = await Item.findByIdAndUpdate(
+      req.params.id, 
+      { name: req.body.name }, 
+      { new: true }
+    );
+    res.json(updatedItem);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE endpoint to delete an item
+app.delete('/api/items/:id', async (req, res) => {
+  try {
+    await Item.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Item deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Start server

@@ -4,6 +4,7 @@ import axios from 'axios';
 function App() {
   const [items, setItems] = useState([]);
   const [name, setName] = useState('');
+  const [editingId, setEditingId] = useState(null);
 
   // Fetch items from the backend
   useEffect(() => {
@@ -12,12 +13,39 @@ function App() {
       .catch(error => console.log(error));
   }, []);
 
-  // Add new item
-  const addItem = () => {
-    axios.post('http://localhost:5000/api/items', { name })
-      .then(response => {
-        setItems([...items, response.data]);
-        setName('');
+  // Add or Update item
+  const handleSubmit = () => {
+    if (!name.trim()) return;
+
+    if (editingId) {
+      axios.put(`http://localhost:5000/api/items/${editingId}`, { name })
+        .then(response => {
+          setItems(items.map(item => item._id === editingId ? response.data : item));
+          setName('');
+          setEditingId(null);
+        })
+        .catch(error => console.log(error));
+    } else {
+      axios.post('http://localhost:5000/api/items', { name })
+        .then(response => {
+          setItems([...items, response.data]);
+          setName('');
+        })
+        .catch(error => console.log(error));
+    }
+  };
+
+  // Edit item
+  const handleEdit = (item) => {
+    setName(item.name);
+    setEditingId(item._id);
+  };
+
+  // Delete item
+  const handleDelete = (id) => {
+    axios.delete(`http://localhost:5000/api/items/${id}`)
+      .then(() => {
+        setItems(items.filter(item => item._id !== id));
       })
       .catch(error => console.log(error));
   };
@@ -36,13 +64,25 @@ function App() {
         />
       </div>
       
-      <button className="btn btn-primary" onClick={addItem}>Add Item</button>
+      <button className="btn btn-primary" onClick={handleSubmit}>
+        {editingId ? 'Update Item' : 'Add Item'}
+      </button>
+      {editingId && (
+        <button className="btn btn-secondary ms-2" style={{ marginLeft: '10px' }} onClick={() => {
+          setName('');
+          setEditingId(null);
+        }}>Cancel</button>
+      )}
 
       <h2 className="mt-4">Items:</h2>
       <ul className="list-group">
         {items.map(item => (
-          <li key={item._id} className="list-group-item">
-            {item.name}
+          <li key={item._id} className="list-group-item d-flex justify-content-between align-items-center" style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>{item.name}</span>
+            <div>
+              <button className="btn btn-sm btn-info me-2" style={{ marginRight: '5px' }} onClick={() => handleEdit(item)}>Edit</button>
+              <button className="btn btn-sm btn-danger" onClick={() => handleDelete(item._id)}>Delete</button>
+            </div>
           </li>
         ))}
       </ul>

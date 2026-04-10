@@ -13,7 +13,7 @@
       build: 
         context: ./frontend
       ports:
-        - "8000:80"
+        - "80:80"
     
     mongo:
       image: mongo:latest
@@ -21,7 +21,12 @@
         - "27017:27017"
       networks:
         - mern-network
+      volumes:
+        - mongo-data:/data/db
       
   networks:
     mern-network:
       driver: bridge
+
+  volumes:
+    mongo-data:
