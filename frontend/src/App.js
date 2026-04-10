@@ -6,9 +6,11 @@ function App() {
   const [name, setName] = useState('');
   const [editingId, setEditingId] = useState(null);
 
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
   // Fetch items from the backend
   useEffect(() => {
-    axios.get('http://localhost:5000/api/items')
+    axios.get(`${API_URL}/items`)
       .then(response => setItems(response.data))
       .catch(error => console.log(error));
   }, []);
@@ -18,7 +20,7 @@ function App() {
     if (!name.trim()) return;
 
     if (editingId) {
-      axios.put(`http://localhost:5000/api/items/${editingId}`, { name })
+      axios.put(`${API_URL}/items/${editingId}`, { name })
         .then(response => {
           setItems(items.map(item => item._id === editingId ? response.data : item));
           setName('');
@@ -26,7 +28,7 @@ function App() {
         })
         .catch(error => console.log(error));
     } else {
-      axios.post('http://localhost:5000/api/items', { name })
+      axios.post(`${API_URL}/items`, { name })
         .then(response => {
           setItems([...items, response.data]);
           setName('');
@@ -43,7 +45,7 @@ function App() {
 
   // Delete item
   const handleDelete = (id) => {
-    axios.delete(`http://localhost:5000/api/items/${id}`)
+    axios.delete(`${API_URL}/items/${id}`)
       .then(() => {
         setItems(items.filter(item => item._id !== id));
       })
